@@ -140,22 +140,65 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
    */
   public function request( array $request ) {
 
+    $response = new MEXP_Response();
 
-    // You'll want to handle connection errors to your service here. Look at the Twitter and YouTube implementations for how you could do this.
+    // Oauth Params.
+    $baseUrl = "http://www.usatodaysportsimages.com/api/searchAPI/";
+    $consumerSecret = 'THeMinSe';
+    $consumerKey = 'scoobydoo';
+    $oauthTimestamp = time();
+    $nonce = md5(mt_rand());
+    $oauthSignatureMethod = "HMAC-SHA1";
+    $oauthVersion = "1.0";
+    $keywords = $request['params']['q'];
+    $terms = $request['params']['q'];
 
-    // Create the response for the API
-    /* $response = new MEXP_Response();
+    $sigBase = "GET&" . rawurlencode($baseUrl) . "&"
+      . rawurlencode("keywords=" . rawurlencode($keywords)
+        . "&limit=100&oauth_consumer_key=" . rawurlencode($consumerKey)
+        . "&oauth_nonce=" . rawurlencode($nonce)
+        . "&oauth_signature_method=" . rawurlencode($oauthSignatureMethod)
+        . "&oauth_timestamp=" . $oauthTimestamp
+        . "&oauth_version=" . $oauthVersion
+        . "&offset=1&terms=" . rawurlencode($terms));
 
-    $item = new MEXP_Response_Item();
-    $item->set_content( 'WordPress 3.6 “Oscar”' );
-    $item->set_date( strtotime( '01-08-2013' ) );
-    $item->set_date_format( 'g:i A - j M y' );
-    $item->set_id( 117 );
-    $item->set_thumbnail( 'https://i.ytimg.com/vi/pAHn9f6At_g/mqdefault.jpg' );
-    $item->set_url( esc_url_raw( 'http://www.youtube.com/watch?v=0kzhpkam7t8' ) );
+    $sigKey = $consumerSecret . "&";
+    $oauthSig = base64_encode(hash_hmac("sha1", $sigBase, $sigKey, TRUE));
 
-    $response->add_item( $item );
-    return $response; */
+    $requestUrl = $baseUrl . "?oauth_consumer_key=" . rawurlencode($consumerKey)
+      . "&oauth_nonce=" . rawurlencode($nonce)
+      . "&oauth_signature_method=" . rawurlencode($oauthSignatureMethod)
+      . "&oauth_timestamp=" . rawurlencode($oauthTimestamp)
+      . "&oauth_version=" . rawurlencode($oauthVersion)
+      . "&oauth_signature=" . rawurlencode($oauthSig)
+      . "&terms=" . rawurlencode($terms)
+      . "&keywords=" . rawurlencode($keywords)
+      . "&limit=100&offset=1";
+
+
+    $api_response = wp_remote_get( $requestUrl );
+    $api_response = json_decode($api_response['body'], true);
+
+    foreach ($api_response['results']['item'] as $row => $response_data) {
+      foreach ($response_data as $innerRow => $value) {
+
+        $item = new MEXP_Response_Item();
+
+        $item->set_content( $value['headline'] );
+        $item->set_date( strtotime( $value['dateCreate'] ) );
+        $item->set_date_format( 'g:i A - j M y' );
+        $item->set_id((int) 1 + (int) $row );
+        $item->set_thumbnail( $value['thumbUrl'] );
+        $item->set_url( esc_url_raw( $value['previewUrl'] ) );
+
+        $response->add_item( $item );
+
+      }
+    }
+
+
+    return $response;
+
   }
 
   /**
