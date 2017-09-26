@@ -35,7 +35,90 @@ function usatsi_mexp_service_new( array $services ) {
   return $services;
 }
 add_filter( 'mexp_services', 'usatsi_mexp_service_new' );
+add_action( 'wp_ajax_usatsi_download_image', 'usatsi_download_image' );
+add_action( 'wp_ajax_usatsi_image_proxy', 'usatsi_image_proxy' );
 
+
+// add hidden tab to media upload window
+function usatsi_upload_hidden_tabs_handler($tabs) {
+    $tabs['usatsitab_hidden'] = __('USAT Sports Images Hidden', 'usatsi_images');
+    return $tabs;
+}
+add_filter('media_upload_tabs', 'usatsi_upload_hidden_tabs_handler');
+
+//hidden tab conent handler
+function usatsi_upload_hidden_tabs_content_handler() {
+    wp_iframe('usatsi_media_upload_images_tab_hidden');
+}
+add_action('media_upload_usatsitab_hidden', 'usatsi_upload_hidden_tabs_content_handler');
+
+
+function usatsi_download_image() {
+
+  // Need to require these files
+  if ( !function_exists('media_handle_upload') ) {
+    require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/file.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/media.php');
+  }
+
+  $url = $_POST['download_url'];
+  $tmp = download_url( $url );
+
+  if( is_wp_error( $tmp ) ){
+    // download failed, handle error
+  }
+
+  $post_id = $_POST['post_id'];
+  $desc = "The WordPress Logo";
+  $file_array = array();
+
+  // Set variables for storage
+  // fix file filename for query strings
+  preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $url, $matches);
+  $file_array['name'] = basename($matches[0]);
+  $file_array['tmp_name'] = $tmp;
+
+  // If error storing temporarily, unlink
+  if ( is_wp_error( $tmp ) ) {
+    @unlink($file_array['tmp_name']);
+    $file_array['tmp_name'] = '';
+  }
+
+  // do the validation and storage stuff
+  $id = media_handle_sideload( $file_array, $post_id, $desc );
+
+  // If error storing permanently, unlink
+  if ( is_wp_error($id) ) {
+    @unlink($file_array['tmp_name']);
+    return $id;
+  }
+
+
+  $src = wp_get_attachment_url( $id );
+
+  echo $id;
+  wp_die();
+
+}
+
+// function that output the wp_iframe content
+function usatsi_media_upload_images_tab_hidden() {
+    ?>
+    <b>YIKES!!!!</b>
+
+    <script>
+
+        console.log(parent.usatsi_image_ajax.attachmentId);
+
+        window.location = 'media-upload.php?type=image&tab=library&post_id=' + <?=absint($_REQUEST['post_id']) ?> + '&attachment_id=' + parent.usatsi_image_ajax.attachmentId;
+
+
+    </script>
+
+
+  <?php
+}
 
 /**
  * Backbone templates for various views for your new service
@@ -53,7 +136,7 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
     <div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="mexp-item-area mexp-item" data-id="{{ data.id }}">
       <div class="mexp-item-container clearfix">
         <div class="mexp-item-thumb">
-          <img src="{{ data.thumbnail }}">
+            <img src="{{ data.thumbnail }}" data-image-id="{{ data.id }}" data-download-url="{{ data.url }}" data-post-id="<?php echo esc_attr( get_the_id() ) ?>">
         </div>
 
         <div class="mexp-item-main">
@@ -128,9 +211,26 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
    * Allows the service to enqueue JS/CSS only when it's required. Akin to WordPress' load action.
    */
   public function load() {
+    add_action( 'mexp_enqueue', array( $this, 'enqueue_statics' ) );
     add_filter( 'mexp_tabs',   array( $this, 'tabs' ),   10, 1 );
     add_filter( 'mexp_labels', array( $this, 'labels' ), 10, 1 );
   }
+
+  public function enqueue_statics() {
+    // instance the class
+    wp_enqueue_script(
+      'mexp-service-usatsi',
+      plugins_url( 'js/usatsi-media-service.js', __FILE__ ),
+      array( 'jquery', 'mexp' ),
+      false,
+      true
+    );
+
+    wp_localize_script( 'mexp-service-usatsi', 'usatsi_image_ajax', array(
+      'ajax_url' => admin_url( 'admin-ajax.php' )
+    ));
+  }
+
 
   /**
    * Handles the AJAX request and returns an appropriate response. This should be used, for example, to perform an API request to the service provider and return the results.
@@ -140,22 +240,65 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
    */
   public function request( array $request ) {
 
+    $response = new MEXP_Response();
 
-    // You'll want to handle connection errors to your service here. Look at the Twitter and YouTube implementations for how you could do this.
+    // Oauth Params.
+    $baseUrl = "http://www.usatodaysportsimages.com/api/searchAPI/";
+    $consumerSecret = 'THeMinSe';
+    $consumerKey = 'scoobydoo';
+    $oauthTimestamp = time();
+    $nonce = md5(mt_rand());
+    $oauthSignatureMethod = "HMAC-SHA1";
+    $oauthVersion = "1.0";
+    $keywords = $request['params']['q'];
+    $terms = $request['params']['q'];
 
-    // Create the response for the API
-    /* $response = new MEXP_Response();
+    $sigBase = "GET&" . rawurlencode($baseUrl) . "&"
+      . rawurlencode("keywords=" . rawurlencode($keywords)
+        . "&limit=100&oauth_consumer_key=" . rawurlencode($consumerKey)
+        . "&oauth_nonce=" . rawurlencode($nonce)
+        . "&oauth_signature_method=" . rawurlencode($oauthSignatureMethod)
+        . "&oauth_timestamp=" . $oauthTimestamp
+        . "&oauth_version=" . $oauthVersion
+        . "&offset=1&terms=" . rawurlencode($terms));
 
-    $item = new MEXP_Response_Item();
-    $item->set_content( 'WordPress 3.6 “Oscar”' );
-    $item->set_date( strtotime( '01-08-2013' ) );
-    $item->set_date_format( 'g:i A - j M y' );
-    $item->set_id( 117 );
-    $item->set_thumbnail( 'https://i.ytimg.com/vi/pAHn9f6At_g/mqdefault.jpg' );
-    $item->set_url( esc_url_raw( 'http://www.youtube.com/watch?v=0kzhpkam7t8' ) );
+    $sigKey = $consumerSecret . "&";
+    $oauthSig = base64_encode(hash_hmac("sha1", $sigBase, $sigKey, TRUE));
 
-    $response->add_item( $item );
-    return $response; */
+    $requestUrl = $baseUrl . "?oauth_consumer_key=" . rawurlencode($consumerKey)
+      . "&oauth_nonce=" . rawurlencode($nonce)
+      . "&oauth_signature_method=" . rawurlencode($oauthSignatureMethod)
+      . "&oauth_timestamp=" . rawurlencode($oauthTimestamp)
+      . "&oauth_version=" . rawurlencode($oauthVersion)
+      . "&oauth_signature=" . rawurlencode($oauthSig)
+      . "&terms=" . rawurlencode($terms)
+      . "&keywords=" . rawurlencode($keywords)
+      . "&limit=100&offset=1";
+
+
+    $api_response = wp_remote_get( $requestUrl );
+    $api_response = json_decode($api_response['body'], true);
+
+    foreach ($api_response['results']['item'] as $row => $response_data) {
+      foreach ($response_data as $innerRow => $value) {
+
+        $item = new MEXP_Response_Item();
+
+        $item->set_content( $value['headline'] );
+        $item->set_date( strtotime( $value['dateCreate'] ) );
+        $item->set_date_format( 'g:i A - j M y' );
+        $item->set_id((int) 1 + (int) $row );
+        $item->set_thumbnail( $value['thumbUrl'] );
+        $item->set_url( esc_url_raw( $value['previewUrl'] ) );
+
+        $response->add_item( $item );
+
+      }
+    }
+
+
+    return $response;
+
   }
 
   /**
