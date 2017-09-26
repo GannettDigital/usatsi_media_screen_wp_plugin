@@ -35,7 +35,78 @@ function usatsi_mexp_service_new( array $services ) {
   return $services;
 }
 add_filter( 'mexp_services', 'usatsi_mexp_service_new' );
+add_action( 'wp_ajax_usatsi_download_image', 'usatsi_download_image' );
+add_action( 'wp_ajax_usatsi_image_proxy', 'usatsi_image_proxy' );
 
+
+// add hidden tab to media upload window
+function usatsi_upload_hidden_tabs_handler($tabs) {
+    $tabs['usatsitab_hidden'] = __('USAT Sports Images Hidden', 'usatsi_images');
+    return $tabs;
+}
+add_filter('media_upload_tabs', 'usatsi_upload_hidden_tabs_handler');
+
+//hidden tab conent handler
+function usatsi_upload_hidden_tabs_content_handler() {
+    wp_iframe('usatsi_media_upload_images_tab_hidden');
+}
+add_action('media_upload_usatsitab_hidden', 'usatsi_upload_hidden_tabs_content_handler');
+
+
+function usatsi_download_image() {
+
+  $file = array();
+  $file['name'] = $_POST['download_url'];
+
+  //$file['tmp_name'] = download_url( admin_url('admin-ajax.php?action=usatsi_image_proxy&usatsi_image_id=' . $file['name'] ) );
+  //https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_1280.jpg
+
+  $file['tmp_name'] = download_url('https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_1280.jpg' );
+
+  if (is_wp_error($file['tmp_name'])) {
+    @unlink($file['tmp_name']);
+    return new WP_Error('usatsi_error', 'Could not download image from remote source');
+  }
+
+  //$attachmentId = media_handle_upload('usatsi_image_upload', $_POST['post_id']);
+  $attachmentId = media_handle_sideload($file, $_POST['post_id']);
+
+  $attach_data = wp_generate_attachment_metadata( $attachmentId,  $file);
+
+  wp_update_attachment_metadata( $attachmentId,  $attach_data );
+  media_handle_upload( 0, $_POST['post_id'] );
+  echo $attachmentId;
+  wp_die();
+
+}
+
+// function that output the wp_iframe content
+function usatsi_media_upload_images_tab_hidden() {
+    ?>
+    <b>YIKES!!!!</b>
+
+    <script>
+
+        console.log(parent.usatsi_image_ajax.attachmentId);
+
+        <?php if ( ! isset( $_GET['attachment_id'] ) ) : ?>
+            jQuery.post('.', {
+                usatsi_upload: "1",
+                image_url: jQuery(this).data('url'),
+                //image_user: jQuery(this).data('user'),
+
+                wpnonce: '<?= wp_create_nonce('usatsi_images_security_nonce'); ?>' }, function(data) {
+                window.location = 'media-upload.php?type=image&tab=library&post_id=' + <?=absint($_REQUEST['post_id']) ?> + '&attachment_id=' + 103;
+            });
+        <?php endif ?>
+
+
+
+    </script>
+
+
+  <?php
+}
 
 /**
  * Backbone templates for various views for your new service
@@ -128,9 +199,26 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
    * Allows the service to enqueue JS/CSS only when it's required. Akin to WordPress' load action.
    */
   public function load() {
+    add_action( 'mexp_enqueue', array( $this, 'enqueue_statics' ) );
     add_filter( 'mexp_tabs',   array( $this, 'tabs' ),   10, 1 );
     add_filter( 'mexp_labels', array( $this, 'labels' ), 10, 1 );
   }
+
+  public function enqueue_statics() {
+    // instance the class
+    wp_enqueue_script(
+      'mexp-service-usatsi',
+      plugins_url( 'js/usatsi-media-service.js', __FILE__ ),
+      array( 'jquery', 'mexp' ),
+      false,
+      true
+    );
+
+    wp_localize_script( 'mexp-service-usatsi', 'usatsi_image_ajax', array(
+      'ajax_url' => admin_url( 'admin-ajax.php' )
+    ));
+  }
+
 
   /**
    * Handles the AJAX request and returns an appropriate response. This should be used, for example, to perform an API request to the service provider and return the results.
