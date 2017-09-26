@@ -55,27 +55,49 @@ add_action('media_upload_usatsitab_hidden', 'usatsi_upload_hidden_tabs_content_h
 
 function usatsi_download_image() {
 
-  $file = array();
-  $file['name'] = $_POST['download_url'];
-
-  //$file['tmp_name'] = download_url( admin_url('admin-ajax.php?action=usatsi_image_proxy&usatsi_image_id=' . $file['name'] ) );
-  //https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_1280.jpg
-
-  $file['tmp_name'] = download_url('https://cdn.pixabay.com/photo/2012/05/29/00/43/car-49278_1280.jpg' );
-
-  if (is_wp_error($file['tmp_name'])) {
-    @unlink($file['tmp_name']);
-    return new WP_Error('usatsi_error', 'Could not download image from remote source');
+  // Need to require these files
+  if ( !function_exists('media_handle_upload') ) {
+    require_once(ABSPATH . "wp-admin" . '/includes/image.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/file.php');
+    require_once(ABSPATH . "wp-admin" . '/includes/media.php');
   }
 
-  //$attachmentId = media_handle_upload('usatsi_image_upload', $_POST['post_id']);
-  $attachmentId = media_handle_sideload($file, $_POST['post_id']);
+  $url = $_POST['download_url'];
+  $tmp = download_url( $url );
 
-  $attach_data = wp_generate_attachment_metadata( $attachmentId,  $file);
+  if( is_wp_error( $tmp ) ){
+    // download failed, handle error
+  }
 
-  wp_update_attachment_metadata( $attachmentId,  $attach_data );
-  media_handle_upload( 0, $_POST['post_id'] );
-  echo $attachmentId;
+  $post_id = $_POST['post_id'];
+  $desc = "The WordPress Logo";
+  $file_array = array();
+
+  // Set variables for storage
+  // fix file filename for query strings
+  preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $url, $matches);
+  $file_array['name'] = basename($matches[0]);
+  $file_array['tmp_name'] = $tmp;
+
+  // If error storing temporarily, unlink
+  if ( is_wp_error( $tmp ) ) {
+    @unlink($file_array['tmp_name']);
+    $file_array['tmp_name'] = '';
+  }
+
+  // do the validation and storage stuff
+  $id = media_handle_sideload( $file_array, $post_id, $desc );
+
+  // If error storing permanently, unlink
+  if ( is_wp_error($id) ) {
+    @unlink($file_array['tmp_name']);
+    return $id;
+  }
+
+
+  $src = wp_get_attachment_url( $id );
+
+  echo $id;
   wp_die();
 
 }
@@ -89,17 +111,7 @@ function usatsi_media_upload_images_tab_hidden() {
 
         console.log(parent.usatsi_image_ajax.attachmentId);
 
-        <?php if ( ! isset( $_GET['attachment_id'] ) ) : ?>
-            jQuery.post('.', {
-                usatsi_upload: "1",
-                image_url: jQuery(this).data('url'),
-                //image_user: jQuery(this).data('user'),
-
-                wpnonce: '<?= wp_create_nonce('usatsi_images_security_nonce'); ?>' }, function(data) {
-                window.location = 'media-upload.php?type=image&tab=library&post_id=' + <?=absint($_REQUEST['post_id']) ?> + '&attachment_id=' + 103;
-            });
-        <?php endif ?>
-
+        window.location = 'media-upload.php?type=image&tab=library&post_id=' + <?=absint($_REQUEST['post_id']) ?> + '&attachment_id=' + parent.usatsi_image_ajax.attachmentId;
 
 
     </script>
@@ -124,7 +136,7 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
     <div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="mexp-item-area mexp-item" data-id="{{ data.id }}">
       <div class="mexp-item-container clearfix">
         <div class="mexp-item-thumb">
-          <img src="{{ data.thumbnail }}">
+            <img src="{{ data.thumbnail }}" data-image-id="{{ data.id }}" data-download-url="{{ data.url }}" data-post-id="<?php echo esc_attr( get_the_id() ) ?>">
         </div>
 
         <div class="mexp-item-main">

@@ -31,8 +31,14 @@ wp.media.view.MEXP = UsatsiMexpContentView.extend({
             'post_id' : post_id
         };
 
+
+        console.log(data);
+
         jQuery.post(usatsi_image_ajax.ajax_url, data, function(response) {
             console.log(response);
+
+
+
             usatsi_image_ajax['attachmentId'] = response;
 
 
