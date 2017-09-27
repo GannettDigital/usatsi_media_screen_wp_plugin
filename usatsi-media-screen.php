@@ -62,6 +62,9 @@ function usatsi_download_image() {
     require_once(ABSPATH . "wp-admin" . '/includes/media.php');
   }
 
+
+
+  //$tmp_url = admin_url('admin-ajax.php?action=usatsi_image_proxy&usatsi_image_id=' . $image_id );
   $url = $_POST['download_url'];
   $tmp = download_url( $url );
 
@@ -70,14 +73,20 @@ function usatsi_download_image() {
   }
 
   $post_id = $_POST['post_id'];
-  $desc = "The WordPress Logo";
+  $desc = $_POST['image_title'];
   $file_array = array();
+  if( is_wp_error( $tmp ) ){
+    // download failed, handle error
+  }
+
 
   // Set variables for storage
   // fix file filename for query strings
   preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $url, $matches);
+
   $file_array['name'] = basename($matches[0]);
   $file_array['tmp_name'] = $tmp;
+
 
   // If error storing temporarily, unlink
   if ( is_wp_error( $tmp ) ) {
@@ -95,7 +104,26 @@ function usatsi_download_image() {
   }
 
 
+  $attach_data = wp_generate_attachment_metadata( $id,  get_attached_file($id));
+
+  //$attach_data["image_meta"]["caption"] = 'This is the real caption'; //Title!
+
+  wp_update_attachment_metadata( $id,  $attach_data );
+
+
   $src = wp_get_attachment_url( $id );
+
+  $image_data = array(
+    'ID' => $id,
+    'post_title' => 'This is the post title',
+    'post_content' => 'This is the post content', //caption!
+    'post_excerpt' => 'This is the post excerpt', //caption!
+
+  );
+  //$image_data['ID'] = $id;
+  //$image_data['post_excerpt'] = $desc;
+  wp_update_post($image_data);
+
 
   echo $id;
   wp_die();
@@ -120,6 +148,53 @@ function usatsi_media_upload_images_tab_hidden() {
   <?php
 }
 
+function usatsi_image_proxy() {
+
+    error_log( 'PROXY IMAGE ID:' . $_GET['usatsi_image_id']);
+
+  // USAT SI API key.
+  //$usatsi_api = get_option( 'usatsi_apikey', '' );
+  //$usatsi_api_secret = get_option( 'usatsi_apikey', '' );
+
+  // Oauth Params.
+  $baseUrl = "http://www.usatsimg.com/api/download/";
+  $consumerSecret = 'THeMinSe';
+  $consumerKey = 'scoobydoo';
+  $oauthTimestamp = time();
+  $nonce = md5(mt_rand());
+  $oauthSignatureMethod = "HMAC-SHA1";
+  $oauthVersion = "1.0";
+  $imageid = $_GET['usatsi_image_id'];
+
+  $sigBase = "GET&" . rawurlencode($baseUrl) . "&"
+    . rawurlencode("imageID=" . rawurlencode($imageid)
+      . "&oauth_consumer_key=" . rawurlencode($consumerKey)
+      . "&oauth_nonce=" . rawurlencode($nonce)
+      . "&oauth_signature_method=" . rawurlencode($oauthSignatureMethod)
+      . "&oauth_timestamp=" . rawurlencode($oauthTimestamp)
+      . "&oauth_version=" . rawurlencode($oauthVersion));
+  $sigKey = $consumerSecret . "&";
+  $oauthSig = base64_encode(hash_hmac("sha1", $sigBase, $sigKey, TRUE));
+
+  $requestUrl = $baseUrl . "?oauth_consumer_key=" . rawurlencode($consumerKey)
+    . "&oauth_nonce=" . rawurlencode($nonce)
+    . "&oauth_signature_method=" . rawurlencode($oauthSignatureMethod)
+    . "&oauth_timestamp=" . rawurlencode($oauthTimestamp)
+    . "&oauth_version=" . rawurlencode($oauthVersion)
+    . "&oauth_signature=" . rawurlencode($oauthSig)
+    . "&imageID=" . rawurlencode($imageid);
+
+
+  $response = wp_remote_get( $requestUrl );
+  $response = json_decode($response['body']);
+
+  error_log($response['body']);
+
+  header("Content-Type: image/jpeg");
+  echo $response->data;
+}
+
+
 /**
  * Backbone templates for various views for your new service
  */
@@ -136,7 +211,12 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
     <div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="mexp-item-area mexp-item" data-id="{{ data.id }}">
       <div class="mexp-item-container clearfix">
         <div class="mexp-item-thumb">
-            <img src="{{ data.thumbnail }}" data-image-id="{{ data.id }}" data-download-url="{{ data.url }}" data-post-id="<?php echo esc_attr( get_the_id() ) ?>">
+            <img src="{{ data.thumbnail }}"
+                 data-image-id="{{ data.meta.image_id }}"
+                 data-download-url="{{ data.url }}"
+                 data-post-id="<?php echo esc_attr( get_the_id() ) ?>"
+                 data-image-title="{{ data.content }}"
+                 data-image-caption="Laweez">
         </div>
 
         <div class="mexp-item-main">
@@ -290,12 +370,22 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
         $item->set_id((int) 1 + (int) $row );
         $item->set_thumbnail( $value['thumbUrl'] );
         $item->set_url( esc_url_raw( $value['previewUrl'] ) );
+        $item->add_meta( array(
+                'image_id' => $value['uniqueId']
+        ) );
 
         $response->add_item( $item );
 
+        /* $metadata = array(
+                'caption' => $value['caption'],
+                'title' => $value['headline'],
+                'attribution' => $value['credit']
+        );
+
+        $response->add_meta($metadata); */
+
       }
     }
-
 
     return $response;
 

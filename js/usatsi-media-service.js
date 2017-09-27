@@ -23,16 +23,20 @@ wp.media.view.MEXP = UsatsiMexpContentView.extend({
         var download_url = jQuery(e.target).data('download-url');
         var image_id = jQuery(e.target).data('image-id');
         var post_id = jQuery(e.target).data('post-id');
+        var image_title = jQuery(e.target).data('image-title');
 
         var data = {
             'action' : 'usatsi_download_image',
             'download_url' : download_url,
             'image_id' : image_id,
-            'post_id' : post_id
+            'post_id' : post_id,
+            'image_title' : image_title
         };
 
 
         console.log(data);
+
+        console.log(usatsi_image_ajax.ajax_url);
 
         jQuery.post(usatsi_image_ajax.ajax_url, data, function(response) {
             console.log(response);
