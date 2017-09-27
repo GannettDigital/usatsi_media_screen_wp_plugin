@@ -1,0 +1,53 @@
+
+/* .mexp-content-usatsi_mexmp_service .mexp-item {
+    height: 365px;
+    padding: 10px;
+    display: inline-block;
+    background: #CCC;
+    border: 1px solid #232323;
+    border-radius: 4px;
+    vertical-align: bottom;
+    margin: 5px 5px 15px 0;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.mexp-content-usatsi_mexmp_service  .mexp-item-container {
+    height: 225px;
+    width: 270px;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    vertical-align: bottom;
+    display: table-cell;
+    text-align: center;
+    border: none;
+    background: #000;
+    padding: 10px;
+    color: #FFF;
+}
+
+.mexp-content-usatsi_mexmp_service  .mexp-item-thumb {
+    position: relative;
+    cursor: pointer;
+    background: #000;
+}
+
+.mexp-content-usatsi_mexmp_service .mexp-item-thumb img {
+    width: auto;
+} */
+
+
+.mexp-content-usatsi_mexmp_service .mexp-item-thumb img {
+    width: auto;
+    max-height: 250px;
+    max-height: 250px;
+}
+
+.mexp-content-usatsi_mexmp_service .mexp-item {
+    height: 320px;
+    width: 300px;
+}
+
+
+

@@ -133,15 +133,8 @@ function usatsi_download_image() {
 // function that output the wp_iframe content
 function usatsi_media_upload_images_tab_hidden() {
     ?>
-    <b>YIKES!!!!</b>
-
     <script>
-
-        console.log(parent.usatsi_image_ajax.attachmentId);
-
         window.location = 'media-upload.php?type=image&tab=library&post_id=' + <?=absint($_REQUEST['post_id']) ?> + '&attachment_id=' + parent.usatsi_image_ajax.attachmentId;
-
-
     </script>
 
 
@@ -150,16 +143,15 @@ function usatsi_media_upload_images_tab_hidden() {
 
 function usatsi_image_proxy() {
 
-    error_log( 'PROXY IMAGE ID:' . $_GET['usatsi_image_id']);
+  $options  = get_option( 'usatsi_options' );
 
-  // USAT SI API key.
-  //$usatsi_api = get_option( 'usatsi_apikey', '' );
-  //$usatsi_api_secret = get_option( 'usatsi_apikey', '' );
+  $usatsi_api = ( isset( $options['usatsi_apikey'] ) ? esc_attr( $options['usatsi_apikey'] ) : '' );
+  $usatsi_api_secret = ( isset( $options['usatsi_apisecret'] ) ? esc_attr( $options['usatsi_apisecret'] ) : '' );
 
   // Oauth Params.
   $baseUrl = "http://www.usatsimg.com/api/download/";
-  $consumerSecret = 'THeMinSe';
-  $consumerKey = 'scoobydoo';
+  $consumerSecret = $usatsi_api_secret;
+  $consumerKey = $usatsi_api;
   $oauthTimestamp = time();
   $nonce = md5(mt_rand());
   $oauthSignatureMethod = "HMAC-SHA1";
@@ -208,7 +200,7 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
    */
   public function item( $id, $tab ) {
     ?>
-    <div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="mexp-item-area mexp-item" data-id="{{ data.id }}">
+    <div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="mexp-item-area" data-id="{{ data.id }}">
       <div class="mexp-item-container clearfix">
         <div class="mexp-item-thumb">
             <img src="{{ data.thumbnail }}"
@@ -297,7 +289,12 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
   }
 
   public function enqueue_statics() {
-    // instance the class
+
+    wp_enqueue_style(
+      'mexp-service-usatsi-css',
+      plugin_dir_url( __FILE__  ) . 'css/usatsi-media-screen.css'
+    );
+
     wp_enqueue_script(
       'mexp-service-usatsi',
       plugins_url( 'js/usatsi-media-service.js', __FILE__ ),
@@ -309,6 +306,7 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
     wp_localize_script( 'mexp-service-usatsi', 'usatsi_image_ajax', array(
       'ajax_url' => admin_url( 'admin-ajax.php' )
     ));
+
   }
 
 
@@ -320,12 +318,17 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
    */
   public function request( array $request ) {
 
+    $options  = get_option( 'usatsi_options' );
+
+    $usatsi_api = ( isset( $options['usatsi_apikey'] ) ? esc_attr( $options['usatsi_apikey'] ) : '' );
+    $usatsi_api_secret = ( isset( $options['usatsi_apisecret'] ) ? esc_attr( $options['usatsi_apisecret'] ) : '' );
+
     $response = new MEXP_Response();
 
     // Oauth Params.
     $baseUrl = "http://www.usatodaysportsimages.com/api/searchAPI/";
-    $consumerSecret = 'THeMinSe';
-    $consumerKey = 'scoobydoo';
+    $consumerSecret = $usatsi_api_secret;
+    $consumerKey = $usatsi_api;
     $oauthTimestamp = time();
     $nonce = md5(mt_rand());
     $oauthSignatureMethod = "HMAC-SHA1";
