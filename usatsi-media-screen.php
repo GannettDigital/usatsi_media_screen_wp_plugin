@@ -62,8 +62,6 @@ function usatsi_download_image() {
     require_once(ABSPATH . "wp-admin" . '/includes/media.php');
   }
 
-
-
   //$tmp_url = admin_url('admin-ajax.php?action=usatsi_image_proxy&usatsi_image_id=' . $image_id );
   $url = $_POST['download_url'];
   $tmp = download_url( $url );
@@ -74,6 +72,9 @@ function usatsi_download_image() {
 
   $post_id = $_POST['post_id'];
   $desc = $_POST['image_title'];
+  $post_title = $_POST['image_title'];
+  $post_content = $_POST['image_caption'];
+
   $file_array = array();
   if( is_wp_error( $tmp ) ){
     // download failed, handle error
@@ -103,25 +104,19 @@ function usatsi_download_image() {
     return $id;
   }
 
-
   $attach_data = wp_generate_attachment_metadata( $id,  get_attached_file($id));
 
-  //$attach_data["image_meta"]["caption"] = 'This is the real caption'; //Title!
-
   wp_update_attachment_metadata( $id,  $attach_data );
-
 
   $src = wp_get_attachment_url( $id );
 
   $image_data = array(
     'ID' => $id,
-    'post_title' => 'This is the post title',
-    'post_content' => 'This is the post content', //caption!
-    'post_excerpt' => 'This is the post excerpt', //caption!
-
+    'post_title' => $post_title,
+    'post_content' => $post_content, //caption!
+    'post_excerpt' => $post_content, //caption!
   );
-  //$image_data['ID'] = $id;
-  //$image_data['post_excerpt'] = $desc;
+
   wp_update_post($image_data);
 
 
@@ -203,12 +198,13 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
     <div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="mexp-item-area" data-id="{{ data.id }}">
       <div class="mexp-item-container clearfix">
         <div class="mexp-item-thumb">
-            <img src="{{ data.thumbnail }}"
+            <img class="mexp-item-img {{ data.meta.locked }}" src="{{ data.thumbnail }}"
                  data-image-id="{{ data.meta.image_id }}"
                  data-download-url="{{ data.url }}"
                  data-post-id="<?php echo esc_attr( get_the_id() ) ?>"
                  data-image-title="{{ data.content }}"
-                 data-image-caption="Laweez">
+                 data-image-caption="{{ data.meta.caption }}"
+                 data-image-credit="{{ data.meta.credit }}"/>
         </div>
 
         <div class="mexp-item-main">
@@ -221,6 +217,30 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
         </div>
 
       </div>
+    <ul class="media-actions">
+        <li class="media-icon-preview" title="Image Preview"></li>
+        <li class="media-icon-import" title="Import File"></li>
+    </ul>
+    <div class="media-preview-link">
+        <p>Please see your account administrator to unlock this image for import.</p>
+        <input value="http://www.usatsimg.com/setImages/{{ data.meta.parent_id }}/preview/{{ data.meta.image_id }}" class="media-preview-link-input" />
+        <button class="media-preview-link-copy">copy</button>
+        <button class="media-preview-link-anchor">
+            <a target="_blank" href="http://www.usatsimg.com/setImages/{{ data.meta.parent_id }}/preview/{{ data.meta.image_id }}">goto</a>
+        </button>
+    </div>
+    <div class="on-hover-content">
+        <img class="media-preview-image" data-src="{{ data.meta.previewUrl }}" src="<?php echo esc_url( plugin_dir_url( __FILE__  ) . '/images/x.png' ) ?>">
+        <div class="label-wrapper label-title">
+            {{ data.content }}
+        </div>
+        <div class="label-wrapper label-caption">
+            {{ data.meta.caption }}
+        </div>
+        <div class="label-wrapper label-credit">
+          {{ data.meta.credit }}
+        </div>
+    </div>
     </div>
 
     <a href="#" id="mexp-check-{{ data.id }}" data-id="{{ data.id }}" class="check" title="<?php esc_attr_e( 'Deselect', 'mexp' ); ?>">
@@ -369,12 +389,29 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 
         $item->set_content( $value['headline'] );
         $item->set_date( strtotime( $value['dateCreate'] ) );
-        $item->set_date_format( 'g:i A - j M y' );
+        $item->set_date_format( 'M j, Y' );
         $item->set_id((int) 1 + (int) $row );
         $item->set_thumbnail( $value['thumbUrl'] );
         $item->set_url( esc_url_raw( $value['previewUrl'] ) );
+
+        // Is the image historical!
+        $historical = 0;
+        $time_is = current_time( 'timestamp' );;
+        $image_time_is = strtotime( $value['dateCreate'] );
+        $timediff = floor(( ( $time_is - $image_time_is ) / ( 60 * 60 * 24 ) ) / 365 );
+
+        if ($timediff >= 4) {
+          $historical = 1;
+        }
+
         $item->add_meta( array(
-                'image_id' => $value['uniqueId']
+                'image_id' => $value['uniqueId'],
+                'previewUrl' => esc_url_raw( $value['previewUrl'] ),
+                'caption' => $value['caption'],
+                'credit' => $value['credit'],
+                'historical' => $historical,
+                'parent_id' => $value['parentId'],
+                'locked' => ( $historical ? 'media-locked' : '' ),
         ) );
 
         $response->add_item( $item );
