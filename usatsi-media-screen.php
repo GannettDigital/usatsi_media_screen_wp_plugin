@@ -41,7 +41,7 @@ add_action( 'wp_ajax_usatsi_image_proxy', 'usatsi_image_proxy' );
 
 // add hidden tab to media upload window
 function usatsi_upload_hidden_tabs_handler($tabs) {
-    $tabs['usatsitab_hidden'] = __('USAT Sports Images Hidden', 'usatsi_images');
+    $tabs['usatsitab_hidden'] = __('USAT Sports Images', 'usatsi_images');
     return $tabs;
 }
 add_filter('media_upload_tabs', 'usatsi_upload_hidden_tabs_handler');
@@ -53,7 +53,11 @@ function usatsi_upload_hidden_tabs_content_handler() {
 add_action('media_upload_usatsitab_hidden', 'usatsi_upload_hidden_tabs_content_handler');
 
 
+
+
 function usatsi_download_image() {
+
+    error_log('usatsi_download_image: ' . $_POST['image_id'] );
 
   // Need to require these files
   if ( !function_exists('media_handle_upload') ) {
@@ -62,31 +66,60 @@ function usatsi_download_image() {
     require_once(ABSPATH . "wp-admin" . '/includes/media.php');
   }
 
-  //$tmp_url = admin_url('admin-ajax.php?action=usatsi_image_proxy&usatsi_image_id=' . $image_id );
-  $url = $_POST['download_url'];
-  $tmp = download_url( $url );
-
-  if( is_wp_error( $tmp ) ){
-    // download failed, handle error
-  }
-
   $post_id = $_POST['post_id'];
   $desc = $_POST['image_title'];
   $post_title = $_POST['image_title'];
   $post_content = $_POST['image_caption'];
+  $image_id = $_POST['image_id'];
+
+  //$tmp_url = admin_url('admin-ajax.php?action=usatsi_image_proxy&usatsi_image_id=' . $image_id );
+
+
+  //$url = $_POST['download_url'];
+
+  //error_log('download image');
+  //error_log( $_POST('image_id'));
+
+  //$admin_proxy_url = admin_url( 'admin-ajax.php?action=usatsi_image_proxy' );
+  //error_log( $admin_proxy_url);
+  $image_url = usatsi_build_auth_url();
+  $tmp = download_url( $image_url  );
+
+
+
+  //$tmp = usatsi_image_proxy();
+
+
+
+
+  if( is_wp_error( $tmp ) ){
+      error_log('jeez laweez!');
+    // download failed, handle error
+  }
+
+
+  //$tmp = usatsi_image_proxy( '10322140' );
+
+
+
+
+
 
   $file_array = array();
   if( is_wp_error( $tmp ) ){
+      error_log( json_encode( $tmp ) );
     // download failed, handle error
   }
 
 
   // Set variables for storage
-  // fix file filename for query strings
-  preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $url, $matches);
+  //fix file filename for query strings
+  //preg_match('/[^\?]+\.(jpg|jpe|jpeg|gif|png)/i', $url, $matches);
 
-  $file_array['name'] = basename($matches[0]);
+ //$file_array['name'] = basename($matches[0]);
+  $file_array['name'] = $image_id . '.jpg';
   $file_array['tmp_name'] = $tmp;
+  //$file_array['type'] = 'file';
 
 
   // If error storing temporarily, unlink
@@ -98,13 +131,19 @@ function usatsi_download_image() {
   // do the validation and storage stuff
   $id = media_handle_sideload( $file_array, $post_id, $desc );
 
+  error_log('id: ' . $id );
+
   // If error storing permanently, unlink
   if ( is_wp_error($id) ) {
     @unlink($file_array['tmp_name']);
     return $id;
   }
 
+  error_log('damit');
+ error_log(get_attached_file($id));
   $attach_data = wp_generate_attachment_metadata( $id,  get_attached_file($id));
+
+  error_log( json_encode($attach_data) );
 
   wp_update_attachment_metadata( $id,  $attach_data );
 
@@ -136,7 +175,24 @@ function usatsi_media_upload_images_tab_hidden() {
   <?php
 }
 
-function usatsi_image_proxy() {
+
+
+//replaces the download_url
+function usatsi_download_url($image_id) {
+
+  error_log('usatsi_download_url: ' . $image_id );
+
+  //$admin_proxy_url = admin_url( 'admin-ajax.php?action=usatsi_image_proxy' );
+
+
+  //return wp_remote_get($admin_proxy_url);
+
+  ///error_log(json_encode( $response ));
+
+
+}
+
+function usatsi_build_auth_url() {
 
   $options  = get_option( 'usatsi_options' );
 
@@ -151,7 +207,7 @@ function usatsi_image_proxy() {
   $nonce = md5(mt_rand());
   $oauthSignatureMethod = "HMAC-SHA1";
   $oauthVersion = "1.0";
-  $imageid = $_GET['usatsi_image_id'];
+  $imageid = $_POST['image_id'];
 
   $sigBase = "GET&" . rawurlencode($baseUrl) . "&"
     . rawurlencode("imageID=" . rawurlencode($imageid)
@@ -171,14 +227,59 @@ function usatsi_image_proxy() {
     . "&oauth_signature=" . rawurlencode($oauthSig)
     . "&imageID=" . rawurlencode($imageid);
 
+  //error_log($requestUrl );
 
-  $response = wp_remote_get( $requestUrl );
-  $response = json_decode($response['body']);
+  return $requestUrl;
 
-  error_log($response['body']);
+}
+
+function usatsi_image_proxy() {
+  error_log( 'YIKES!' );
+  error_log(  $_POST['image_id'] );
+
+
 
   header("Content-Type: image/jpeg");
-  echo $response->data;
+  $response = wp_remote_get( $requestUrl );
+  error_log($response->get_error_messages());
+
+
+
+  return $response;
+  wp_die();
+
+ /*  $url_filename = basename( parse_url( $requestUrl, PHP_URL_PATH ) );
+
+  $tmpfname = wp_tempnam( $url_filename );
+
+  $response = wp_safe_remote_get( $requestUrl, array( 'timeout' => 300, 'stream' => true, 'filename' => $tmpfname ) );
+  error_log('response: ' . json_encode($response) );
+  if ( is_wp_error( $response ) ) {
+    unlink( $tmpfname );
+    error_log('crap!!!!!!');
+    return $response;
+  }
+  $content_md5 = wp_remote_retrieve_header( $response, 'content-md5' );
+    if ( $content_md5 ) {
+      $md5_check = verify_file_md5($tmpfname, $content_md5);
+      if (is_wp_error($md5_check)) {
+        unlink($tmpfname);
+        return $md5_check;
+      }
+
+    } */
+
+  //error_log( json_encode($response));
+  //echo $response['body'];
+
+
+  //header("Content-Type: image/jpeg");
+
+
+  //$response = json_decode($response->;
+
+  //return $response;
+  //return $response;
 }
 
 
@@ -275,7 +376,6 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
         placeholder="<?php esc_attr_e( 'Search for anything!', 'mexp' ); ?>"
       >
       <input class="button button-large" type="submit" value="<?php esc_attr_e( 'Search', 'mexp' ); ?>">
-
       <div class="spinner"></div>
     </form>
     <?php
@@ -324,7 +424,8 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
     );
 
     wp_localize_script( 'mexp-service-usatsi', 'usatsi_image_ajax', array(
-      'ajax_url' => admin_url( 'admin-ajax.php' )
+      'ajax_url' => admin_url( 'admin-ajax.php' ),
+      'ajax_url_proxy' => admin_url( 'admin-ajax.php' )
     ));
 
   }
@@ -355,6 +456,7 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
     $oauthVersion = "1.0";
     $keywords = $request['params']['q'];
     $terms = $request['params']['q'];
+    $page = ( $_POST['page'] ? $_POST['page'] : 1 );
 
     $sigBase = "GET&" . rawurlencode($baseUrl) . "&"
       . rawurlencode("keywords=" . rawurlencode($keywords)
@@ -363,7 +465,7 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
         . "&oauth_signature_method=" . rawurlencode($oauthSignatureMethod)
         . "&oauth_timestamp=" . $oauthTimestamp
         . "&oauth_version=" . $oauthVersion
-        . "&offset=1&terms=" . rawurlencode($terms));
+        . "&offset=" . $page . "&terms=" . rawurlencode($terms));
 
     $sigKey = $consumerSecret . "&";
     $oauthSig = base64_encode(hash_hmac("sha1", $sigBase, $sigKey, TRUE));
@@ -376,7 +478,7 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
       . "&oauth_signature=" . rawurlencode($oauthSig)
       . "&terms=" . rawurlencode($terms)
       . "&keywords=" . rawurlencode($keywords)
-      . "&limit=100&offset=1";
+      . "&limit=100&offset=" . $page;
 
 
     $api_response = wp_remote_get( $requestUrl );
@@ -392,7 +494,7 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
         $item->set_date_format( 'M j, Y' );
         $item->set_id((int) 1 + (int) $row );
         $item->set_thumbnail( $value['thumbUrl'] );
-        $item->set_url( esc_url_raw( $value['previewUrl'] ) );
+        $item->set_url( $value['fullUrl'] );
 
         // Is the image historical!
         $historical = 0;

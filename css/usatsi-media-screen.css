@@ -197,3 +197,10 @@
 .mexp-content-usatsi_mexmp_service .media-preview-link button a:hover {
     text-decoration: none;
 }
+
+/* TEMP HIDES USATSI HIDDEN TAB */
+.media-menu .media-menu-item:last-child {
+    display: none;
+}
+
+

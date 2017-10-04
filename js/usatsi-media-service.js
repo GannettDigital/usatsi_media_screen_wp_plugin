@@ -72,6 +72,7 @@ wp.media.view.MEXP = UsatsiMexpContentView.extend({
     },
 
     importImage: function(e) {
+        e.preventDefault();
         e.stopPropagation();
 
         //window.location = '/';
