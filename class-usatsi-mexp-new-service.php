@@ -31,6 +31,18 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 		add_action( 'mexp_enqueue', array( $this, 'enqueue_statics' ) );
 		add_filter( 'mexp_tabs',   array( $this, 'tabs' ),   10, 1 );
 		add_filter( 'mexp_labels', array( $this, 'labels' ), 10, 1 );
+		add_filter( 'admin_body_class', array( $this, 'usatsi_body_classes' ), 10, 1 );
+	}
+
+	/**
+	 * Adds custom css tag to admin body.
+	 *
+	 * @param array $classes Name of class.
+	 * @return Array Body tag class names
+	 */
+	public function usatsi_body_classes( $classes ) {
+		$classes = 'usatsi-media-exp-service';
+		return $classes;
 	}
 
 	/**
@@ -43,6 +55,11 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 		wp_enqueue_style(
 			'mexp-service-usatsi-css',
 			plugin_dir_url( __FILE__ ) . 'css/usatsi-media-screen.css'
+		);
+
+		wp_enqueue_style(
+			'mexp-service-usatsi-branding-css',
+			plugin_dir_url( __FILE__ ) . 'css/usatsi-media-screen-branding.css'
 		);
 
 		wp_enqueue_script(

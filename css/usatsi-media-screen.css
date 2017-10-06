@@ -62,7 +62,15 @@
 	width: 300px;
 }
 
-
+.mexp-content-usatsi_mexmp_service .mexp-spinner {
+	position:absolute;
+	width: 100%;
+	height: 100%;
+	background: url(../images/spinner.gif) no-repeat;
+	background-size: 100%;
+	left: 50%;
+	top: 50%;
+}
 
 .mexp-content-usatsi_mexmp_service .on-hover-content {
 	position: absolute;
@@ -154,19 +162,30 @@
 	background-image: url(../images/upload-hover.png);
 }
 
-.mexp-content-usatsi_mexmp_service .media-preview-link {
-	width: calc(100% + 1px);
+.mexp-content-usatsi_mexmp_service .media-preview-link,
+.mexp-content-usatsi_mexmp_service .mexp-spinner {
+	width: calc(100% - 1px);
 	position: absolute;
 	height: 100%;
 	background: #000;
 	z-index: 2;
 	top: 0;
+	left: 0;
 	opacity: .8;
 	color: #fff;
 	display: none;
 	padding: 10px;
 	box-sizing: border-box;
 }
+
+.mexp-content-usatsi_mexmp_service .mexp-svg-spinner {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-left: -32px;
+	margin-top: -32px;
+}
+
 
 .mexp-content-usatsi_mexmp_service .media-preview-link-input {
 	width: 50%;
