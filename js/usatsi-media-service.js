@@ -81,6 +81,9 @@ wp.media.view.MEXP = UsatsiMexpContentView.extend(
 
 			if ( ! jQuery( imgEl ).hasClass( 'media-locked' )  ) {
 
+                // Show downloading spinner!
+                jQuery( imgEl ).parent().parent().siblings( '.mexp-spinner' ).fadeIn( 'fast' );
+
 				var download_url = imgEl.data( 'download-url' ),
 				image_id = imgEl.data( 'image-id' ),
 				post_id = imgEl.data( 'post-id' ),
@@ -101,7 +104,7 @@ wp.media.view.MEXP = UsatsiMexpContentView.extend(
 				};
 
 				jQuery.post(
-					usatsi_image_ajax.ajax_url, data, function(response) {
+					usatsi_image_ajax.ajax_url + '?_wponce', data, function(response) {
 						usatsi_image_ajax['attachmentId'] = response;
 
 						// Triggers click on hidden media tab to open edit iframe window
