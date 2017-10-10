@@ -50,6 +50,25 @@ function usatsi_upload_hidden_tabs_content_handler() {
 }
 add_action( 'media_upload_usatsitab_hidden', 'usatsi_upload_hidden_tabs_content_handler' );
 
+// add button next to "Add Media"
+// run the action
+//do_action( 'media_buttons', $array, $int );
+//if (!$usatsi_images_settings['button'] | $usatsi_images_settings['button']=='true') {
+  function usatsi_media_buttons_context_handler() {
+        $admin_usatsi_url = admin_url( '?post_id=' . get_the_ID() . '&tab=usatsitab_hidden&TB_iframe=1' );
+        //echo wp_kses( '<button id="usatsi-mexp-button" class="thickbox button insert-media add_media">USA Today</button>' ,
+        echo ( '<button type="button" id="usatsi-mexp-button" class="button insert-media add_media" data-editor="content"><span class="wp-media-buttons-icon"></span> Add Media</button>');
+
+        //echo '<a href="#" class="thickbox button media-menu-item">USAT Sports Images</a>';
+        array( 'a' => array(
+                'href' => array(),
+                'class' => array(),
+                'title' => array(),
+                'id' => array() ) );
+  }
+  add_action( 'media_buttons', 'usatsi_media_buttons_context_handler', 15 );
+//}
+
 /**
  * Downloads user selected image.
  *
@@ -188,5 +207,3 @@ function usatsi_build_auth_url( $imageid ) {
 include_once 'class-usatsi-mexp-new-template.php';
 include_once 'class-usatsi-mexp-new-service.php';
 include_once 'class-usatsi-options-page.php';
-
-
