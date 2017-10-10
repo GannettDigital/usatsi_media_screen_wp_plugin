@@ -220,3 +220,18 @@
 .media-menu .media-menu-item:last-child {
 	display: none;
 }
+
+#usatsi-mexp-button {
+	display: inline-block;
+	text-indent: -1000px;
+	overflow: hidden;
+	background-image: url(../images/si-logo-2x-black.png);
+	background-repeat: no-repeat;
+	width: 110px;
+	background-size: 90%;
+	background-position: center;
+}
+
+#tab-usatsitab_hidden {
+	display: none;
+}

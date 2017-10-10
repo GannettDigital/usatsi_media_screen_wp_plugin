@@ -73,7 +73,6 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 		wp_localize_script(
 			'mexp-service-usatsi', 'usatsi_image_ajax', array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'ajax_url_proxy' => admin_url( 'admin-ajax.php' ),
 			)
 		);
 
@@ -138,7 +137,12 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 			. '&keywords=' . rawurlencode( $keywords )
 			. '&limit=50&offset=' . $page;
 
-			$api_response = wp_remote_get( $request_url );
+			if ( method_exists( vip_safe_wp_remote_get ) ) {
+				$api_response = vip_safe_wp_remote_get( $request_url );
+			} else {
+				$api_response = wp_remote_get( $request_url );
+			}
+
 			$api_response = json_decode( $api_response['body'], true );
 
 			foreach ( $api_response['results']['item'] as $row => $response_data ) {

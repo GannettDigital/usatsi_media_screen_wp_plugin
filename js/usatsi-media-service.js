@@ -1,3 +1,22 @@
+jQuery(function($) {
+    $(document).ready(function(){
+        $('#insert-my-media').click(open_media_window);
+    });
+
+    function open_media_window() {
+    }
+});
+
+function open_media_window() {
+    var window = wp.media({
+        title: 'Insert a media',
+        library: {type: 'image'},
+        multiple: false,
+        button: {text: 'Insert'}
+    });
+}
+
+
 var UsatsiMexpContentView = wp.media.view.MEXP;
 
 wp.media.view.MEXP = UsatsiMexpContentView.extend(
@@ -14,7 +33,7 @@ wp.media.view.MEXP = UsatsiMexpContentView.extend(
 					'mouseenter .mexp-item' : 'showActions',
 					'mouseleave .mexp-item' : 'hideActions',
 					'click .media-preview-link-copy' : 'copyPreviewLink',
-					'mouseleave .media-preview-link' : 'hidePreviewLink',
+					'mouseleave .media-preview-link' : 'hidePreviewLink'
 				}
 			);
 		},

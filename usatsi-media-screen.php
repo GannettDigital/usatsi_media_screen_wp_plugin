@@ -51,6 +51,16 @@ function usatsi_upload_hidden_tabs_content_handler() {
 add_action( 'media_upload_usatsitab_hidden', 'usatsi_upload_hidden_tabs_content_handler' );
 
 /**
+ * New Media Button USAT SI
+ *
+ *  Void().
+ */
+function usatsi_media_buttons_context_handler() {
+	  echo ( '<button type="button" id="usatsi-mexp-button" class="button insert-media add_media" data-editor="content"><span class="wp-media-buttons-icon"></span> USAT Sports Images</button>');
+}
+add_action( 'media_buttons', 'usatsi_media_buttons_context_handler', 15 );
+
+/**
  * Downloads user selected image.
  *
  * @return float image attachement.
@@ -188,5 +198,3 @@ function usatsi_build_auth_url( $imageid ) {
 include_once 'class-usatsi-mexp-new-template.php';
 include_once 'class-usatsi-mexp-new-service.php';
 include_once 'class-usatsi-options-page.php';
-
-
