@@ -26,7 +26,6 @@ function usatsi_media_services_new( array $services ) {
 add_filter( 'mexp_services', 'usatsi_media_services_new' );
 add_action( 'wp_ajax_usatsi_download_image', 'usatsi_download_image' );
 
-
 /**
  * Create our tabs handler
  *
@@ -55,10 +54,11 @@ add_action( 'media_upload_usatsitab_hidden', 'usatsi_upload_hidden_tabs_content_
  *
  *  Void().
  */
-function usatsi_media_buttons_context_handler() {
+/*function usatsi_media_buttons_context_handler() {
 	  echo ( '<button type="button" id="usatsi-mexp-button" class="button insert-media add_media" data-editor="content"><span class="wp-media-buttons-icon"></span> USAT Sports Images</button>');
 }
-add_action( 'media_buttons', 'usatsi_media_buttons_context_handler', 15 );
+add_action( 'media_buttons', 'usatsi_media_buttons_context_handler', 15 );*/
+
 
 /**
  * Downloads user selected image.
@@ -75,11 +75,11 @@ function usatsi_download_image() {
 	}
 
 	if ( wp_verify_nonce( ( isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '' ), 'usatsi_download_image' ) ) {
-		$post_id = (isset( $_POST['post_id'] ) ? sanitize_title( wp_unslash( $_POST['post_id'] ) ) : null);
-		$desc = (isset( $_POST['image_title'] ) ? sanitize_title( wp_unslash( $_POST['image_title'] ) ) : '');
-		$post_title = (isset( $_POST['image_title'] ) ? sanitize_title( wp_unslash( $_POST['image_title'] ) ) : '');
-		$post_content = (isset( $_POST['image_caption'] ) ? sanitize_title( wp_unslash( $_POST['image_caption'] ) ) : '');
-		$image_id = (isset( $_POST['image_id'] ) ? sanitize_title( wp_unslash( $_POST['image_id'] ) ) : null);
+		$post_id = (isset( $_POST['post_id'] ) ? esc_html( wp_unslash( $_POST['post_id'] ) ) : null);
+		$desc = (isset( $_POST['image_title'] ) ? esc_html( wp_unslash( $_POST['image_title'] ) ) : '');
+		$post_title = (isset( $_POST['image_title'] ) ? esc_html( wp_unslash( $_POST['image_title'] ) ) : '');
+		$post_content = (isset( $_POST['image_caption'] ) ? esc_html( wp_unslash( $_POST['image_caption'] ) ) : '');
+		$image_id = (isset( $_POST['image_id'] ) ? esc_html( wp_unslash( $_POST['image_id'] ) ) : null);
 
 		$image_url = usatsi_build_auth_url( $image_id );
 
