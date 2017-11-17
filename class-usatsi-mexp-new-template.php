@@ -40,7 +40,7 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
 			  <div class="mexp-item-content">
 				{{ data.content }}
 			  </div>
-			  <div class="mexp-item-date">2 (1).gif
+			  <div class="mexp-item-date">
 				{{ data.date }}
 			  </div>
 			</div>
