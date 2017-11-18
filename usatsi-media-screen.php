@@ -104,8 +104,12 @@ function usatsi_download_image() {
 			$file_array['tmp_name'] = '';
 		}
 
-		// Do the validation and storage stuff!
-		$id = media_handle_sideload( $file_array, $post_id, $desc );
+        //Let's be safe make sure this is being done via admin ajax page!
+        if ( is_admin() && wp_doing_ajax() ) {
+            $id = media_handle_sideload( $file_array, $post_id, $desc );
+        } else {
+            wp_die();
+        }
 
 		// If error storing permanently, unlink!
 		if ( is_wp_error( $id ) ) {
