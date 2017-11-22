@@ -4,6 +4,10 @@ USA Today Sports Images
 
 USA Today Sports Images gives you the ability to search, import and insert images from the nations's largest sports image service.
 
+Requirements
+------------
+This plugin extends and requires the Media Explorer plugin, https://github.com/Automattic/media-explorer
+
 Setup
 -----
 In order to get this working in your WordPress installation, you have to follow
