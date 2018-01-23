@@ -205,6 +205,9 @@ function usatsi_build_auth_url( $imageid ) {
 
 }
 
-include_once 'class-usatsi-mexp-new-template.php';
-include_once 'class-usatsi-mexp-new-service.php';
-include_once 'class-usatsi-options-page.php';
+if ( class_exists( 'MEXP_Service' ) ) {
+	include_once 'class-usatsi-mexp-new-template.php';
+	include_once 'class-usatsi-mexp-new-service.php';
+	include_once 'class-usatsi-options-page.php';
+}
+

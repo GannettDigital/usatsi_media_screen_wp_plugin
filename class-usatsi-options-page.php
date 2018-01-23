@@ -21,6 +21,7 @@ class Usatsi_Options_Page {
 	 * Adds new actions and filters.
 	 */
 	public function __construct() {
+
 		add_action( 'admin_menu', array( $this, 'usatsi_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_usatsi_images_options' ) );
 
@@ -77,14 +78,20 @@ class Usatsi_Options_Page {
 		<?php
 	}
 
-	/**
-	 * Renders options API Key form field.
-	 */
+	  /**
+	   * Renders options API Key form field.
+	   */
 	public function usatsi_render_apikey() {
 		printf(
 			'<input class="regular-text" type="text" id="usatsi_apikey" name="usatsi_options[usatsi_apikey]" value="%s" />',
 			isset( $this->options['usatsi_apikey'] ) ? esc_attr( $this->options['usatsi_apikey'] ) : ''
 		);
+	}
+	/**
+	 * Renders options API Key form field.
+	 */
+	public function usatsi_render_description() {
+		echo ( esc_html( 'Please enter your API Key and API Secret below. To gain access to USA Today Sports Images API please email sales@usatodaysportsimages.com.' ) );
 	}
 
 	/**
@@ -102,7 +109,7 @@ class Usatsi_Options_Page {
 	 */
 	public function register_usatsi_images_options() {
 		register_setting( 'usatsi_options_group', 'usatsi_options',  array( $this, 'usatsi_options_validate' ) );
-		add_settings_section( 'usatsi-settings-admin', 'Settings', array( $this, 'render_description' ), 'usatsi-settings-admin' );
+		add_settings_section( 'usatsi-settings-admin', 'Settings', array( $this, 'usatsi_render_description' ), 'usatsi-settings-admin' );
 		add_settings_field( 'usatsi_apikey','USAT SI API KEY', array( $this, 'usatsi_render_apikey' ), 'usatsi-settings-admin', 'usatsi-settings-admin' );
 		add_settings_field( 'usatsi_apisecret','USAT SI API SECRET', array( $this, 'usatsi_render_apisecret' ), 'usatsi-settings-admin', 'usatsi-settings-admin' );
 	}
