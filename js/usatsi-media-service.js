@@ -1,3 +1,5 @@
+"use strict";
+
 var UsatsiMexpContentView = wp.media.view.MEXP;
 
 wp.media.view.MEXP = UsatsiMexpContentView.extend(
@@ -105,7 +107,7 @@ wp.media.view.MEXP = UsatsiMexpContentView.extend(
 
 				jQuery.post(
 					usatsi_image_ajax.ajax_url + '?_wponce', data, function(response) {
-						usatsi_image_ajax['attachmentId'] = response;
+						usatsi_image_ajax.attachmentId = response;
 
 						// Triggers click on hidden media tab to open edit iframe window
 						jQuery( '.media-menu a:last-child' ).trigger( 'click' );
@@ -116,7 +118,7 @@ wp.media.view.MEXP = UsatsiMexpContentView.extend(
 						function() {
 							console.log( "error" );
 						}
-					)
+					);
 
 			} else {
 				// Image is not downloadable show messaging overlay!
