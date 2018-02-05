@@ -84,10 +84,6 @@ function usatsi_download_image() {
 
 		$tmp = download_url( $image_url );
 
-		if ( is_wp_error( $tmp ) ) {
-			return $tmp;
-		}
-
 		$file_array = array();
 		if ( is_wp_error( $tmp ) ) {
 			return $tmp;
@@ -103,9 +99,15 @@ function usatsi_download_image() {
 			$file_array['tmp_name'] = '';
 		}
 
+		$image_data = array(
+			'post_title' => $post_title,
+			'post_content' => $post_content, // caption!
+		'post_excerpt' => $post_content, // caption!
+		);
+
 		// Let's be safe make sure this is being done via admin ajax page!
 		if ( is_admin() && wp_doing_ajax() ) {
-			$id = media_handle_sideload( $file_array, $post_id, $desc );
+			$id = media_handle_sideload( $file_array, $post_id, $desc, $image_data );
 		} else {
 			wp_die();
 		}
@@ -120,21 +122,21 @@ function usatsi_download_image() {
 
 		wp_update_attachment_metadata( $id, $attach_data );
 
-		$image_data = array(
-			'ID' => $id,
+		// Forces ppost not saved or autosaved to show edit image / insert!
+		$post_data = array(
+			'ID' => $post_id,
 			'post_title' => $post_title,
 			'post_content' => $post_content, // caption!
-		  'post_excerpt' => $post_content, // caption!
+		'post_excerpt' => $post_content, // caption!
 		);
-
-		wp_update_post( $image_data );
+		wp_insert_post( $post_data );
 
 		echo esc_attr( $id );
 		wp_die();
 	} else {
 		die();
 		exit();
-	}
+	};
 
 }
 

@@ -11,13 +11,12 @@ var UsatsiSportsImages = (function () {
 				events: function(){
 					return _.extend(
 						{},UsatsiMexpContentView.prototype.events,{
-							'click .mexp-item' : 'importImage',
+							'click .usatsi-mexp-item' : 'importImage',
 							'click .media-icon-import' : 'triggerImport',
 							'click .media-icon-preview' : 'previewImage',
 							'mouseleave .on-hover-content' : 'closePreview',
-							'click .on-hover-content' : 'triggerImport',
-							'mouseenter .mexp-item' : 'showActions',
-							'mouseleave .mexp-item' : 'hideActions',
+							'mouseenter .usatsi-mexp-item' : 'showActions',
+							'mouseleave .usatsi-mexp-item' : 'hideActions',
 							'click .media-preview-link-copy' : 'copyPreviewLink',
 							'mouseleave .media-preview-link' : 'hidePreviewLink'
 						}
@@ -25,6 +24,7 @@ var UsatsiSportsImages = (function () {
 				},
 
 				initialize: function() {
+
 					// remove the media browser default bindings
 					jQuery( '.mexp-item.attachment' ).unbind();
 
@@ -32,6 +32,7 @@ var UsatsiSportsImages = (function () {
 					jQuery( '.media-menu-item:contains("USAT Sports Images Hidden")' ).hide();
 
 					mexpContentView.prototype.initialize.apply( this, arguments );
+
 				},
 
 				copyPreviewLink: function(e) {
@@ -61,7 +62,9 @@ var UsatsiSportsImages = (function () {
 
 				triggerImport: function(e) {
 					e.stopPropagation();
-					jQuery( e.currentTarget ).parent().parent().find( '.mexp-item-img' ).trigger( 'click' );
+					jQuery( e.currentTarget ).parent().trigger( 'click' );
+                    //jQuery( e.currentTarget ).parent().find( '.usatsi-media-img' ).trigger( 'click' );
+
 				},
 
 				previewImage: function(e) {
@@ -82,7 +85,7 @@ var UsatsiSportsImages = (function () {
 					e.preventDefault();
 					e.stopPropagation();
 
-					var imgEl = jQuery( e.currentTarget ).find( '.mexp-item-img' );
+					var imgEl = jQuery( e.currentTarget ).find( '.usatsi-media-img' );
 
 					if ( ! jQuery( imgEl ).hasClass( 'media-locked' )  ) {
 

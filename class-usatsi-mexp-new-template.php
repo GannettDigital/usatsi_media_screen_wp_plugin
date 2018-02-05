@@ -23,13 +23,13 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
 	public function item( $id, $tab ) {
 		$nonce = wp_create_nonce( 'usatsi_download_image' );
 	?>
-		<div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="mexp-item-area" data-id="{{ data.id }}">
+		<div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="usatsi-mexp-item mexp-item-area" data-id="{{ data.id }}">
 		  <div class="mexp-item-container clearfix">
 			<div class="mexp-item-thumb">
-			  <img class="mexp-item-img {{ data.meta.locked }}" src="{{ data.thumbnail }}"
+			  <img class="usatsi-media-img mexp-item-img {{ data.meta.locked }}" src="{{ data.thumbnail }}"
 				   data-image-id="{{ data.meta.image_id }}"
 				   data-download-url="{{ data.url }}"
-				   data-post-id="<?php echo esc_attr( get_the_id() ); ?>"
+				   data-post-id="<?php echo esc_attr( the_ID() ); ?>"
 				   data-image-title="{{ data.content }}"
 				   data-image-caption="{{ data.meta.caption }}"
 				   data-image-credit="{{ data.meta.credit }}"

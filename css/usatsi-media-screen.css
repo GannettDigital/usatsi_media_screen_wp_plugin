@@ -222,7 +222,7 @@
 
 /* TEMP HIDES USATSI HIDDEN TAB */
 .media-menu .media-menu-item:last-child {
-	display: none;
+	 display: none;
 }
 
 #usatsi-mexp-button {
@@ -234,8 +234,4 @@
 	width: 110px;
 	background-size: 90%;
 	background-position: center;
-}
-
-#tab-usatsitab_hidden {
-	display: none;
 }
