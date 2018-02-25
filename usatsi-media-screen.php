@@ -33,7 +33,7 @@ add_action( 'wp_ajax_usatsi_download_image', 'usatsi_download_image' );
  * @return array $Tabs Array of Media Explorer tabs.
  */
 function usatsi_upload_hidden_tabs_handler( $tabs ) {
-	$tabs['usatsitab_hidden'] = __( 'USAT Sports Images', 'usatsi_images' );
+	$tabs['usatsitab_hidden'] = __( 'Insert USAT Sports Images', 'usatsi_images' );
 	return $tabs;
 }
 add_filter( 'media_upload_tabs', 'usatsi_upload_hidden_tabs_handler' );

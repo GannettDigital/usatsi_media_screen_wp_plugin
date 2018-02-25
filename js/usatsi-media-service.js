@@ -1,7 +1,14 @@
-var UsatsiSportsImages = (function () {
-    'use strict';
+/**
+	USAT Sports Images Media Service Plugin
 
-	if (typeof wp.media.view.MEXP !== "undefined"){
+	 @package V1
+	created by: Thomas J. Rivera
+ */
+
+var UsatsiSportsImages = (function () {
+	'use strict';
+
+	if (typeof wp.media.view.MEXP !== "undefined") {
 
 		var UsatsiMexpContentView = wp.media.view.MEXP;
 
@@ -25,10 +32,10 @@ var UsatsiSportsImages = (function () {
 
 				initialize: function() {
 
-					// remove the media browser default bindings
+					// remove the media browser default bindings!
 					jQuery( '.mexp-item.attachment' ).unbind();
 
-					// Let's hide the hidden USAT SI tab we dont want users to see it
+					// Let's hide the hidden USAT SI tab we dont want users to see it!
 					jQuery( '.media-menu-item:contains("USAT Sports Images Hidden")' ).hide();
 
 					mexpContentView.prototype.initialize.apply( this, arguments );
@@ -63,8 +70,6 @@ var UsatsiSportsImages = (function () {
 				triggerImport: function(e) {
 					e.stopPropagation();
 					jQuery( e.currentTarget ).parent().trigger( 'click' );
-                    //jQuery( e.currentTarget ).parent().find( '.usatsi-media-img' ).trigger( 'click' );
-
 				},
 
 				previewImage: function(e) {
@@ -114,10 +119,8 @@ var UsatsiSportsImages = (function () {
 						jQuery.post(
 							usatsi_image_ajax.ajax_url + '?_wponce', data, function(response) {
 								usatsi_image_ajax.attachmentId = response;
-
-								// Triggers click on hidden media tab to open edit iframe window
-								jQuery( '.media-menu a:last-child' ).trigger( 'click' );
-
+								// Triggers click on hidden media tab to open edit iframe window!
+								jQuery( '.media-menu a:CONTAINS("Insert USAT Sports Images")' ).trigger( 'click' );
 							}
 						)
 							.fail(
@@ -133,7 +136,6 @@ var UsatsiSportsImages = (function () {
 
 				}
 
-
 			}
 		);
 
@@ -143,9 +145,10 @@ var UsatsiSportsImages = (function () {
 
 if (typeof jQuery !== "undefined") {
 
-    jQuery(function() {
-        UsatsiSportsImages();
-    });
+	jQuery(
+		function() {
+			UsatsiSportsImages();
+		}
+	);
 
 }
-
