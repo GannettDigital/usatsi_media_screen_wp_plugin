@@ -35,9 +35,6 @@ var UsatsiSportsImages = (function () {
 					// remove the media browser default bindings!
 					jQuery( '.mexp-item.attachment' ).unbind();
 
-					// Let's hide the hidden USAT SI tab we dont want users to see it!
-					jQuery( '.media-menu-item:contains("USAT Sports Images Hidden")' ).hide();
-
 					mexpContentView.prototype.initialize.apply( this, arguments );
 
 				},
