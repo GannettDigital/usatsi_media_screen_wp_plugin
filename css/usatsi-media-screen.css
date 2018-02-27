@@ -18,9 +18,10 @@
 	max-height: 250px;
 }
 
+.mexp-content-usatsi_mexmp_service .media-frame-content .attachment,
 .mexp-content-usatsi_mexmp_service .mexp-item {
-	height: 340px;
-	width: 300px;
+	height: 340px !important;
+	width: 300px !important;
 }
 
 .mexp-content-usatsi_mexmp_service .mexp-spinner {
@@ -190,4 +191,10 @@
 	width: 110px;
 	background-size: 90%;
 	background-position: center;
+}
+
+#usatsi-mexp-backto-button {
+	float: right;
+	margin-top: -45px;
+	margin-right: 15px;
 }

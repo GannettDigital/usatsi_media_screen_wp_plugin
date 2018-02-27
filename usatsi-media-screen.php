@@ -155,6 +155,7 @@ function usatsi_media_upload_images_tab_hidden() {
 
 	?>
 	<script>
+		jQuery('.media-iframe iframe', window.parent.document).find('#tab-usatsitab_hidden');
 		jQuery('.media-iframe iframe',  window.parent.document).attr('src', 'media-upload.php?type=image&tab=library&post_id=' + <?php echo ( esc_attr( absint( $post_id ) ) ); ?> + '&attachment_id=' + parent.usatsi_image_ajax.attachmentId);
 	</script>
 	<?php

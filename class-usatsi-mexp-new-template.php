@@ -155,6 +155,7 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
 	<input class="button button-large" type="submit" value="<?php esc_attr_e( 'Search', 'mexp' ); ?>">
 	<div class="spinner"></div>
 	  </form>
+		<button class="button button-large" id="usatsi-mexp-backto-button"><?php echo esc_html( 'Back To Insert' ); ?></button>
 		<?php
 	}
 }

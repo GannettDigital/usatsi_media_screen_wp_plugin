@@ -8,6 +8,10 @@
 var UsatsiSportsImages = (function () {
 	'use strict';
 
+	jQuery('body').on('click', '#insert-media-button', function(e) {
+    	jQuery('.media-menu a:CONTAINS("Insert USAT Sports Images")').hide();
+	});
+
 	if (typeof wp.media.view.MEXP !== "undefined") {
 
 		var UsatsiMexpContentView = wp.media.view.MEXP;
@@ -25,7 +29,8 @@ var UsatsiSportsImages = (function () {
 							'mouseenter .usatsi-mexp-item' : 'showActions',
 							'mouseleave .usatsi-mexp-item' : 'hideActions',
 							'click .media-preview-link-copy' : 'copyPreviewLink',
-							'mouseleave .media-preview-link' : 'hidePreviewLink'
+							'mouseleave .media-preview-link' : 'hidePreviewLink',
+							'click #usatsi-mexp-backto-button' : 'showMediaTab'
 						}
 					);
 				},
@@ -34,9 +39,9 @@ var UsatsiSportsImages = (function () {
 
 					// remove the media browser default bindings!
 					jQuery( '.mexp-item.attachment' ).unbind();
+                    jQuery( ".media-menu-item:contains('Insert USAT Sports Images')" ).hide();
 
 					mexpContentView.prototype.initialize.apply( this, arguments );
-
 				},
 
 				copyPreviewLink: function(e) {
@@ -83,6 +88,12 @@ var UsatsiSportsImages = (function () {
 
 				},
 
+				showMediaTab: function(e) {
+					e.preventDefault();
+                	e.stopPropagation();
+                    jQuery( '.media-menu a:CONTAINS("Insert USAT Sports Images")' ).trigger( 'click' );
+				},
+
 				importImage: function(e) {
 					e.preventDefault();
 					e.stopPropagation();
@@ -117,7 +128,7 @@ var UsatsiSportsImages = (function () {
 							usatsi_image_ajax.ajax_url + '?_wponce', data, function(response) {
 								usatsi_image_ajax.attachmentId = response;
 								// Triggers click on hidden media tab to open edit iframe window!
-								jQuery( '.media-menu a:CONTAINS("Insert USAT Sports Images")' ).trigger( 'click' );
+                                jQuery( '.media-menu a:CONTAINS("Insert USAT Sports Images")' ).trigger( 'click' );
 							}
 						)
 							.fail(
