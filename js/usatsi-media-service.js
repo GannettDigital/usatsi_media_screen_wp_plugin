@@ -88,12 +88,6 @@ var UsatsiSportsImages = (function () {
 
 				},
 
-				showMediaTab: function(e) {
-					e.preventDefault();
-                	e.stopPropagation();
-                    jQuery( '.media-menu a:CONTAINS("Insert USAT Sports Images")' ).trigger( 'click' );
-				},
-
 				importImage: function(e) {
 					e.preventDefault();
 					e.stopPropagation();
