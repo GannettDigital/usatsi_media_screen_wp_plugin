@@ -137,10 +137,14 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 			. '&keywords=' . rawurlencode( $keywords )
 			. '&limit=50&offset=' . $page;
 
-			if ( method_exists( vip_safe_wp_remote_get ) ) {
-				$api_response = vip_safe_wp_remote_get( $request_url );
+			if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
+				$api_response = vip_safe_wp_remote_get( $request_url, false, 5, 3 );
 			} else {
-				$api_response = wp_remote_get( $request_url );
+				$api_response = wp_remote_get(
+					$request_url, array(
+						'timeout' => 120,
+					)
+				);
 			}
 
 			$api_response = json_decode( $api_response['body'], true );
