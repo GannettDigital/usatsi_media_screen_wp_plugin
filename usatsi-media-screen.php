@@ -1,15 +1,17 @@
 <?php
+// @codingStandardsIgnoreFile
+
 /**
  *
-Plugin Name: USA Today Sports Images
-Description: Allows searching and importing images from USA Today Sports Images
-Version: 1.2
-Author: Thomas J. Rivera
-Author URI:  http://www.usatodaysportsimages.com
-License: GPL2
-Version: 1
+ * Plugin Name: USA Today Sports Images
+ * Description: Allows searching and importing images from USA Today Sports Images
+ * Version: 1.2
+ * Author: Thomas J. Rivera
+ * Author URI:  http://www.usatodaysportsimages.com
+ * License: GPL2
+ * Version: 1
 
-@package   Vendor/Project
+ * @package   Vendor/Project
  */
 
 /**
@@ -33,7 +35,7 @@ add_action( 'wp_ajax_usatsi_download_image', 'usatsi_download_image' );
  * @return array $Tabs Array of Media Explorer tabs.
  */
 function usatsi_upload_hidden_tabs_handler( $tabs ) {
-	$tabs['usatsitab_hidden'] = __( 'USAT Sports Images', 'usatsi_images' );
+	$tabs['usatsitab_hidden'] = __( 'Insert USAT Sports Images', 'usatsi_images' );
 	return $tabs;
 }
 add_filter( 'media_upload_tabs', 'usatsi_upload_hidden_tabs_handler' );
@@ -50,17 +52,6 @@ function usatsi_upload_hidden_tabs_content_handler() {
 add_action( 'media_upload_usatsitab_hidden', 'usatsi_upload_hidden_tabs_content_handler' );
 
 /**
- * New Media Button USAT SI
- *
- *  Void().
- */
-/*function usatsi_media_buttons_context_handler() {
-	  echo ( '<button type="button" id="usatsi-mexp-button" class="button insert-media add_media" data-editor="content"><span class="wp-media-buttons-icon"></span> USAT Sports Images</button>');
-}
-add_action( 'media_buttons', 'usatsi_media_buttons_context_handler', 15 );*/
-
-
-/**
  * Downloads user selected image.
  *
  * @return float image attachement.
@@ -75,19 +66,25 @@ function usatsi_download_image() {
 	}
 
 	if ( wp_verify_nonce( ( isset( $_POST['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ) ) : '' ), 'usatsi_download_image' ) ) {
-		$post_id = (isset( $_POST['post_id'] ) ? esc_html( wp_unslash( $_POST['post_id'] ) ) : null);
-		$desc = (isset( $_POST['image_title'] ) ? esc_html( wp_unslash( $_POST['image_title'] ) ) : '');
-		$post_title = (isset( $_POST['image_title'] ) ? esc_html( wp_unslash( $_POST['image_title'] ) ) : '');
-		$post_content = (isset( $_POST['image_caption'] ) ? esc_html( wp_unslash( $_POST['image_caption'] ) ) : '');
-		$image_id = (isset( $_POST['image_id'] ) ? esc_html( wp_unslash( $_POST['image_id'] ) ) : null);
+		$post_id = (isset( $_POST['post_id'] ) ? sanitize_text_field( wp_unslash( $_POST['post_id'] ) ) : null);
+		$desc = (isset( $_POST['image_title'] ) ? sanitize_text_field( wp_unslash( $_POST['image_title'] ) ) : '');
+		$post_title = (isset( $_POST['image_title'] ) ? sanitize_text_field( wp_unslash( $_POST['image_title'] ) ) : '');
+		$image_id = (isset( $_POST['image_id'] ) ? sanitize_text_field( wp_unslash( $_POST['image_id'] ) ) : null);
+
+		$allowed_html = array(
+			'a' => array(
+				'href' => array(),
+				'title' => array(),
+			),
+			'b' => array(),
+			'strong' => array(),
+		);
+
+		$post_content = (isset( $_POST['image_caption'] ) ? wp_kses( wp_unslash( $_POST['image_caption'] ), $allowed_html ) : '');
 
 		$image_url = usatsi_build_auth_url( $image_id );
 
 		$tmp = download_url( $image_url );
-
-		if ( is_wp_error( $tmp ) ) {
-			return $tmp;
-		}
 
 		$file_array = array();
 		if ( is_wp_error( $tmp ) ) {
@@ -104,12 +101,18 @@ function usatsi_download_image() {
 			$file_array['tmp_name'] = '';
 		}
 
-        //Let's be safe make sure this is being done via admin ajax page!
-        if ( is_admin() && wp_doing_ajax() ) {
-            $id = media_handle_sideload( $file_array, $post_id, $desc );
-        } else {
-            wp_die();
-        }
+		$image_data = array(
+			'post_title' => $post_title,
+			'post_content' => $post_content, // caption!
+		'post_excerpt' => $post_content, // caption!
+		);
+
+		// Let's be safe make sure this is being done via admin ajax page!
+		if ( is_admin() && wp_doing_ajax() ) {
+			$id = media_handle_sideload( $file_array, $post_id, $desc, $image_data );
+		} else {
+			wp_die();
+		}
 
 		// If error storing permanently, unlink!
 		if ( is_wp_error( $id ) ) {
@@ -121,21 +124,21 @@ function usatsi_download_image() {
 
 		wp_update_attachment_metadata( $id, $attach_data );
 
-		$image_data = array(
-			'ID' => $id,
+		// Forces ppost not saved or autosaved to show edit image / insert!
+		$post_data = array(
+			'ID' => $post_id,
 			'post_title' => $post_title,
 			'post_content' => $post_content, // caption!
-		  'post_excerpt' => $post_content, // caption!
+		'post_excerpt' => $post_content, // caption!
 		);
-
-		wp_update_post( $image_data );
+		wp_insert_post( $post_data );
 
 		echo esc_attr( $id );
 		wp_die();
 	} else {
 		die();
 		exit();
-	}
+	};
 
 }
 
@@ -145,9 +148,17 @@ function usatsi_download_image() {
  * @return void().
  */
 function usatsi_media_upload_images_tab_hidden() {
+
+	if ( isset( $_POST['_wpnonce'], $_REQUEST['post_id'] ) && wp_verify_nonce( sanitize_key( $_POST['_wpnonce'] ), 'usatsi_download_image' ) ) {
+		$post_id = sanitize_text_field( wp_unslash( $_REQUEST['post_id'] ) );
+	} else {
+		$post_id = '';
+	}
+
 	?>
 	<script>
-		window.location = 'media-upload.php?type=image&tab=library&post_id=' + <?php echo esc_attr( absint( isset( $_REQUEST['post_id'] ) ? $_REQUEST['post_id'] : '' ) ); ?> + '&attachment_id=' + parent.usatsi_image_ajax.attachmentId;
+		jQuery('.media-iframe iframe', window.parent.document).find('#tab-usatsitab_hidden');
+		jQuery('.media-iframe iframe',  window.parent.document).attr('src', 'media-upload.php?type=image&tab=library&post_id=' + <?php echo ( esc_attr( absint( $post_id ) ) ); ?> + '&attachment_id=' + parent.usatsi_image_ajax.attachmentId);
 	</script>
 	<?php
 }
@@ -199,6 +210,8 @@ function usatsi_build_auth_url( $imageid ) {
 
 }
 
-include_once 'class-usatsi-mexp-new-template.php';
-include_once 'class-usatsi-mexp-new-service.php';
-include_once 'class-usatsi-options-page.php';
+if ( class_exists( 'MEXP_Service' ) ) {
+	include_once 'class-usatsi-mexp-new-template.php';
+	include_once 'class-usatsi-mexp-new-service.php';
+	include_once 'class-usatsi-options-page.php';
+}
