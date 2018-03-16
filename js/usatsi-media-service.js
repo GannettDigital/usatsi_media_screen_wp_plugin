@@ -98,9 +98,8 @@ var UsatsiSportsImages = (function () {
 					e.preventDefault();
 					e.stopPropagation();
                     this.disableEvents();
-                    //var enableEvents = this.enableEvents(e);
 
-                        var imgEl = jQuery( e.currentTarget ).find( '.usatsi-media-img' );
+					var imgEl = jQuery( e.currentTarget ).find( '.usatsi-media-img' );
 
 					if ( ! jQuery( imgEl ).hasClass( 'media-locked' )  ) {
 
@@ -147,8 +146,9 @@ var UsatsiSportsImages = (function () {
 				},
 
 				disableEvents: function(e) {
-                    jQuery(this.el).off('click', '.usatsi-mexp-item');
-                    jQuery(this.el).off('click', '.media-icon-import');
+					jQuery(this.el).off('click', '.usatsi-mexp-item');
+					jQuery(this.el).off('click', '.media-icon-import');
+					jQuery(this.el).off('click', '.media-icon-preview');
 				}
 
 			}
