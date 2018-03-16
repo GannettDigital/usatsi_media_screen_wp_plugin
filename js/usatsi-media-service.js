@@ -97,6 +97,7 @@ var UsatsiSportsImages = (function () {
 				importImage: function(e) {
 					e.preventDefault();
 					e.stopPropagation();
+                    this.disableEvents();
 
 					var imgEl = jQuery( e.currentTarget ).find( '.usatsi-media-img' );
 
@@ -142,6 +143,12 @@ var UsatsiSportsImages = (function () {
 						jQuery( imgEl ).parent().parent().siblings( '.media-preview-link' ).fadeIn( 'fast' );
 					}
 
+				},
+
+				disableEvents: function(e) {
+					jQuery(this.el).off('click', '.usatsi-mexp-item');
+					jQuery(this.el).off('click', '.media-icon-import');
+					jQuery(this.el).off('click', '.media-icon-preview');
 				}
 
 			}
