@@ -123,7 +123,7 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 				. '&oauth_signature_method=' . rawurlencode( $oauth_signature_method )
 				. '&oauth_timestamp=' . $oauth_timestamp
 				. '&oauth_version=' . $oauth_version
-				. '&offset=' . $page . '&terms=' . rawurlencode( $terms )
+				. '&offset=' . ( ( (int) $page - 1 ) * 50 ) . '&terms=' . rawurlencode( $terms )
 			);
 
 			$sig_key = $consumer_secret . '&';
@@ -137,7 +137,7 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 			. '&oauth_signature=' . rawurlencode( $oauth_sig )
 			. '&terms=' . rawurlencode( $terms )
 			. '&keywords=' . rawurlencode( $keywords )
-			. '&limit=50&offset=' . $page;
+			. '&limit=50&offset=' . ( ( (int) $page - 1 ) * 50 );
 
 			if ( function_exists( 'vip_safe_wp_remote_get' ) ) {
 				$api_response = vip_safe_wp_remote_get( $request_url, false, 5, 3 );
@@ -150,6 +150,8 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 			}
 
 			$api_response = json_decode( $api_response['body'], true );
+
+			$maxpage = ceil($api_response['results']['totalAvailableImages'] / 50 );
 
 			foreach ( $api_response['results']['item'] as $row => $response_data ) {
 				foreach ( $response_data as $inner_row => $value ) {
@@ -183,6 +185,9 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 							'historical' => $historical,
 							'parent_id' => $value['parentId'],
 							'locked' => ( $historical ? 'media-locked' : '' ),
+              'page' => ( $page ? $page : 1 ),
+              'maxpage' =>( $maxpage ),
+
 						)
 					);
 
