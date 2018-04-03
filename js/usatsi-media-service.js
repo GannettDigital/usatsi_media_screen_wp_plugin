@@ -42,6 +42,19 @@ var UsatsiSportsImages = (function () {
                     jQuery( ".media-menu-item:contains('Insert USAT Sports Images')" ).hide();
 
 					mexpContentView.prototype.initialize.apply( this, arguments );
+
+				},
+
+                loaded: function(e) {
+
+					var last_item = jQuery('.mexp-item').last().find('.usatsi-media-paging');
+
+					if ( last_item.data('usatsi-page') === last_item.data('usatsi-max-page') ) {
+						jQuery('#usatsi_mexmp_service-loadmore').hide();
+					}
+
+                    // hide spinner
+                    this.$el.find( '.spinner' ).removeClass( 'is-active' );
 				},
 
 				copyPreviewLink: function(e) {
@@ -97,11 +110,11 @@ var UsatsiSportsImages = (function () {
 				importImage: function(e) {
 					e.preventDefault();
 					e.stopPropagation();
-                    this.disableEvents();
 
 					var imgEl = jQuery( e.currentTarget ).find( '.usatsi-media-img' );
 
 					if ( ! jQuery( imgEl ).hasClass( 'media-locked' )  ) {
+                        this.disableEvents();
 
 						// Show downloading spinner!
 						jQuery( imgEl ).parent().parent().siblings( '.mexp-spinner' ).fadeIn( 'fast' );

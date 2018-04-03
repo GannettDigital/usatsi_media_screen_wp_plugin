@@ -23,6 +23,8 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
 	public function item( $id, $tab ) {
 		$nonce = wp_create_nonce( 'usatsi_download_image' );
 	?>
+		<div class="usatsi-media-paging" data-usatsi-page="{{ data.meta.page }}" data-usatsi-max-page="{{ data.meta.maxpage }}"></div>
+
 		<div id="mexp-item-<?php echo esc_attr( $tab ); ?>-{{ data.id }}" class="usatsi-mexp-item mexp-item-area" data-id="{{ data.id }}">
 		  <div class="mexp-item-container clearfix">
 			<div class="mexp-item-thumb">
