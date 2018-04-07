@@ -13,7 +13,13 @@ Setup
 In order to get this working in your WordPress installation, you have to follow
 the next steps:
 
-1. Add and activate the Media Explorer plugin if you do not already have it installed.
+1. Download and install the Media Explorer Plugin https://github.com/Automattic/media-explorer
 
-2. Goto Admin -> Settings -> USAT Sports Images. Enter the API Key and Secret Key provided to you.
+2. Activate the Media Explorer plugin
+
+3. Install the USAT SI Media Screen Plugin 
+
+4. Activate the USAT SI Media Screen Plugin
+
+5. Goto Admin -> Settings -> USAT Sports Images. Enter the API Key and Secret Key provided to you.
 If you do not have an API Key or Secret Key please contact us at register@usatodaysportsimages.com.
