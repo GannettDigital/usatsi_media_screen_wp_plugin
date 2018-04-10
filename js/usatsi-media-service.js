@@ -12,6 +12,11 @@ var UsatsiSportsImages = (function () {
     	jQuery('.media-menu a:CONTAINS("Insert USAT Sports Images")').hide();
 	});
 
+    // fix to force searching animation spinner in prod
+	jQuery('body').on('click', '#usatsi-media-exp-searchbtn', function( e ) {
+        jQuery(this).next().addClass('usatsi-media-exp-is-active');
+	});
+
 	if (typeof wp.media.view.MEXP !== "undefined") {
 
 		var UsatsiMexpContentView = wp.media.view.MEXP;
@@ -54,7 +59,7 @@ var UsatsiSportsImages = (function () {
 					}
 
                     // hide spinner
-                    this.$el.find( '.spinner' ).removeClass( 'is-active' );
+                    this.$el.find( '.spinner' ).removeClass( 'usatsi-media-exp-is-active' ).removeClass('is-active');
 				},
 
 				copyPreviewLink: function(e) {

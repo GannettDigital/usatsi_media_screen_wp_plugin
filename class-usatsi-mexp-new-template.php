@@ -144,7 +144,12 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
 			  border-top: none;
 		  }
 
-	  </style>
+          #usatsi-media-exp-is-active {
+              visibility: visible;
+          }
+
+
+      </style>
 	  <form action="#" class="mexp-toolbar-container clearfix tab-all">
 		<input
 		  type="text"
@@ -154,7 +159,7 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
 		  size="40"
 		  placeholder="<?php esc_attr_e( 'Search for anything!', 'mexp' ); ?>"
 	>
-	<input class="button button-large" type="submit" value="<?php esc_attr_e( 'Search', 'mexp' ); ?>">
+	<input id="usatsi-media-exp-searchbtn" class="button button-large" type="submit" value="<?php esc_attr_e( 'Search', 'mexp' ); ?>">
 	<div class="spinner"></div>
 	  </form>
 		<button class="button button-large" id="usatsi-mexp-backto-button"><?php echo esc_html( 'Back To Insert' ); ?></button>

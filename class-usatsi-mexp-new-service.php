@@ -151,7 +151,7 @@ class Usatsi_MEXP_New_Service extends MEXP_Service {
 
 			$api_response = json_decode( $api_response['body'], true );
 
-			$maxpage = ceil($api_response['results']['totalAvailableImages'] / 50 );
+			$maxpage = ceil( $api_response['results']['totalAvailableImages'] / 50 );
 
 			foreach ( $api_response['results']['item'] as $row => $response_data ) {
 				foreach ( $response_data as $inner_row => $value ) {
