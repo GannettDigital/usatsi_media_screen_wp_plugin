@@ -144,7 +144,7 @@ class Usatsi_MEXP_New_Template extends MEXP_Template {
 			  border-top: none;
 		  }
 
-          #usatsi-media-exp-is-active {
+          .usatsi-media-exp-is-active {
               visibility: visible;
           }
 
